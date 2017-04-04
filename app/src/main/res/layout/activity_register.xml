@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_register"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    tools:context="com.example.administrator.mysocialapp.act.RegisterActivity">
+
+    <EditText
+        android:id="@+id/register_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:drawableLeft="@drawable/login_user"
+        android:hint="@string/usernameS" />
+
+    <EditText
+        android:id="@+id/register_passwords"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:drawableLeft="@drawable/login_password"
+        android:hint="@string/passwords"
+        android:password="true" />
+
+    <EditText
+        android:id="@+id/register_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:drawableLeft="@drawable/login_password"
+        android:hint="@string/passwordSs"
+        android:password="true" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginTop="3dp"
+            android:gravity="center"
+            android:src="@drawable/register_code_icon" />
+
+        <EditText
+            android:id="@+id/chat_register_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="6"
+            android:hint="验证码" />
+
+        <ImageView
+            android:id="@+id/chat_register_password_code"
+            android:layout_width="80dp"
+            android:layout_height="60dp" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/ck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10sp"
+        android:text="@string/read"
+        android:textSize="20sp" />
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+        android:background="@drawable/register_btn"
+        android:text="@string/registerEs" />
+</LinearLayout>

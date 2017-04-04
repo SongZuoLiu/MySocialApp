@@ -1,0 +1,21 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+
+    <!--dialog-->
+    <style name="CustomDialog" parent="Theme.AppCompat.Dialog">
+        <!--是否显示dialog阴影透明-->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 背景透明(transparent)-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--进度颜色-->
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+</resources>

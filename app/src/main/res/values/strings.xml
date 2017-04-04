@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">MySocialApp</string>
+
+    <!--登录页-->
+    <string name="username">请输入账号</string>
+    <string name="password">请输入密码</string>
+    <string name="login">登录</string>
+    <string name="register">注册</string>
+
+    <!--注册页-->
+    <string name="usernameS">请输入用户名</string>
+    <string name="passwords">请输入密码</string>
+    <string name="passwordSs">请再次输入密码</string>
+    <string name="read">我已阅读并同意服务条款</string>
+    <string name="registerEs">注册</string>
+
+    <!--activity_message_list-->
+    <string name="id">ID</string>
+    <string name="ml">消息列表</string>
+    <string name="mess">Message</string>
+    <string name="lian">您的连接已断开</string>
+    <string name="returns">返回</string>
+    <string name="send">发送</string>
+
+    <!--activity_link_man_fragment-->
+    <string name="plist">联系人列表</string>
+    <string name="newFriend">新朋友</string>
+    <string name="groupChart">群聊</string>
+    <string name="publicNumber">公众号</string>
+
+    <!--activity_set_fragment-->
+    <string name="person">个人资料</string>
+    <string name="music">音乐</string>
+    <string name="picture">图片</string>
+    <string name="video">视频</string>
+    <string name="returnLogin">退出当前账号</string>
+
+    <!--item_chat_list-->
+    <string name="del">删除</string>
+
+    <!--item_elv_child-->
+    <string name="lin">林动</string>
+    <string name="miao">描述</string>
+    <string name="wu">武祖</string>
+
+    <!--item_elv_group-->
+    <string name="friend">我的好友</string>
+    <string name="shu">20/10</string>
+
+    <!--activity_drawable_left_fragment-->
+    <string name="hui">激活会员</string>
+    <string name="ge">个性装扮</string>
+    <string name="shou">我的收藏</string>
+    <string name="xiang">我的相册</string>
+    <string name="wen">我的文件</string>
+</resources>

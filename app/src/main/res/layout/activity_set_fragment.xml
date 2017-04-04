@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_set_fragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.administrator.mysocialapp.fragment.SetFragment">
+
+    <Button
+        android:id="@+id/btn_person"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/person"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/btn_music"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/music"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/btn_picture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/picture"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/btn_video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/video"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/btn_returnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/returnLogin"
+        android:textSize="25sp" />
+
+</LinearLayout>
