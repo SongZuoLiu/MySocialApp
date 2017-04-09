@@ -8,15 +8,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import com.example.administrator.mysocialapp.R;
+import com.example.administrator.mysocialapp.act.AddFriendActivity;
+import com.example.administrator.mysocialapp.act.CreateGroupActivity;
 import com.example.administrator.mysocialapp.act.PrivateMessageActivity;
 import com.example.administrator.mysocialapp.adapter.MyExpandableListViewAdapter;
 
 /**
  * 好友列表页
  */
-public class LinkManFragment extends Fragment {
+public class LinkManFragment extends Fragment implements View.OnClickListener {
+    private TextView tv_new_friend, tv_group_chat;
     private View view;
     //可拓展列表视图
     private ExpandableListView expandableListView;
@@ -49,5 +53,24 @@ public class LinkManFragment extends Fragment {
                 return true;
             }
         });
+
+        tv_new_friend = (TextView) view.findViewById(R.id.tv_new_friend);
+        tv_group_chat = (TextView) view.findViewById(R.id.tv_group_chat);
+        tv_new_friend.setOnClickListener(this);
+        tv_group_chat.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tv_new_friend:
+                Intent it = new Intent(getActivity(), AddFriendActivity.class);
+                startActivity(it);
+                break;
+            case R.id.tv_group_chat:
+                Intent intent = new Intent(getActivity(), CreateGroupActivity.class);
+                startActivity(intent);
+                break;
+        }
     }
 }

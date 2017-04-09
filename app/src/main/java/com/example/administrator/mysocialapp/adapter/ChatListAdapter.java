@@ -1,6 +1,7 @@
 package com.example.administrator.mysocialapp.adapter;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -30,6 +32,8 @@ import java.util.List;
 public class ChatListAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<EMConversation> list;
+
+    private HashMap<String, String> textMap = new HashMap<>();
 
     private ListItemClick listItemClick;
 
@@ -75,25 +79,32 @@ public class ChatListAdapter extends BaseAdapter {
         EMConversation emConversation = (EMConversation) getItem(position);
         //从当前会话对象中 获取 最后一条消息的对象
         EMMessage latMessage = emConversation.getLastMessage();
-        //从最后一条消息对象中 获取该消息的消息类型
-        EMMessage.Type type = latMessage.getType();
 
-        switch (type) {
-            case TXT:
-                //获取消息体 并强转成 文本类型消息体
-                EMTextMessageBody txtMessage = (EMTextMessageBody) latMessage.getBody();
-                //从消息体中拿到消息内容 并 设置给 控件
-                viewHolder.content.setText(txtMessage.getMessage());
-                break;
-            case IMAGE:
-                viewHolder.content.setText("[图片]");
-                break;
-            case VIDEO:
-                viewHolder.content.setText("[视频]");
-                break;
-            case VOICE:
-                viewHolder.content.setText("[音频]");
-                break;
+
+        //-草稿-----------------------------------------
+        if (!TextUtils.isEmpty(textMap.get(emConversation.getUserName()))) {
+            viewHolder.content.setText("[草稿]" + textMap.get(emConversation.getUserName()));
+        } else {
+            //从最后一条消息对象中 获取该消息的消息类型
+            EMMessage.Type type = latMessage.getType();
+
+            switch (type) {
+                case TXT:
+                    //获取消息体 并强转成 文本类型消息体
+                    EMTextMessageBody txtMessage = (EMTextMessageBody) latMessage.getBody();
+                    //从消息体中拿到消息内容 并 设置给 控件
+                    viewHolder.content.setText(txtMessage.getMessage());
+                    break;
+                case IMAGE:
+                    viewHolder.content.setText("[图片]");
+                    break;
+                case VIDEO:
+                    viewHolder.content.setText("[视频]");
+                    break;
+                case VOICE:
+                    viewHolder.content.setText("[音频]");
+                    break;
+            }
         }
 
         viewHolder.lay.setOnClickListener(new View.OnClickListener() {
@@ -105,28 +116,33 @@ public class ChatListAdapter extends BaseAdapter {
             }
         });
 
-
         //-------未读消息数---------
-        String username = emConversation.getUserName();
         viewHolder.name.setText(emConversation.getUserName());
+        int unread = emConversation.getUnreadMsgCount();
         try {
-            viewHolder.unread.setText(getUnreadMsgC(username)); //未读消息数
+            if (unread > 0) {
+                viewHolder.unread.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.unread.setVisibility(View.GONE);
+            }
+            viewHolder.unread.setText(unread + ""); //未读消息数
         } catch (Exception e) {
             e.printStackTrace();
         }
         //------强制转化成文本信息------
         viewHolder.time.setText(getLastMsgTime(emConversation) + "");
-        String ss;
-        try {
-            // 强制转化成文本信息，如果之前消息是其他消息类型，此行代码抛出异常
-            EMTextMessageBody tetBody = (EMTextMessageBody) emConversation.getLastMessage().getBody();
-            // 拿到文本消息
-            ss = tetBody.getMessage();
-        } catch (Exception e) {
-            ss = "";
-            e.printStackTrace();
-        }
-        viewHolder.content.setText(ss);
+
+//        String ss;
+//        try {
+//            // 强制转化成文本信息，如果之前消息是其他消息类型，此行代码抛出异常
+//            EMTextMessageBody tetBody = (EMTextMessageBody) emConversation.getLastMessage().getBody();
+//            // 拿到文本消息
+//            ss = tetBody.getMessage();
+//        } catch (Exception e) {
+//            ss = "";
+//            e.printStackTrace();
+//        }
+//        viewHolder.content.contentsetText(ss);
         //删除本行内容
         final View finalConvertView = convertView;
         convertView.findViewById(R.id.btn_del).setOnClickListener(new View.OnClickListener() {
@@ -138,6 +154,7 @@ public class ChatListAdapter extends BaseAdapter {
             }
         });
 
+        viewHolder.name.setText(emConversation.getUserName());
         return convertView;
     }
 
@@ -209,5 +226,11 @@ public class ChatListAdapter extends BaseAdapter {
             this.unread = (TextView) view.findViewById(R.id.chat_list_unread);
             this.lay = view.findViewById(R.id.chat_list_ll);
         }
+    }
+
+    //草稿(上边也有   草稿的判断)
+    public void setTextMap(HashMap<String, String> textMap) {
+        this.textMap = textMap;
+        notifyDataSetChanged();
     }
 }

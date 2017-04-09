@@ -60,10 +60,15 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".act.MainActivity" />
+        <activity android:name=".act.MainActivity"
+            android:launchMode="singleTask"/>
         <activity android:name=".act.LoginActivity" />
         <activity android:name=".act.RegisterActivity" />
-        <activity android:name=".act.PrivateMessageActivity"></activity>
+        <activity android:name=".act.PrivateMessageActivity"
+            android:launchMode="singleTask"/>
+        <activity android:name=".act.GroupActivity" />
+        <activity android:name=".act.CreateGroupActivity" />
+        <activity android:name=".act.AddFriendActivity"></activity>
     </application>
 
 </manifest>

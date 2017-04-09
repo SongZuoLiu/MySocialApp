@@ -80,9 +80,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
         android:background="@drawable/login_btn"
+        android:onClick="login"
         android:padding="10dp"
         android:text="@string/login"
-        android:onClick="login"
         android:textColor="#ffffff"
         android:textSize="25sp" />
 
@@ -92,8 +92,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
         android:background="@drawable/register_btn"
-        android:padding="10dp"
         android:onClick="register"
+        android:padding="10dp"
         android:text="@string/register"
         android:textColor="#ffffff"
         android:textSize="25sp" />

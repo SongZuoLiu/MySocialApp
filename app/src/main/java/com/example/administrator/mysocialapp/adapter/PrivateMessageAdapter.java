@@ -10,10 +10,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.administrator.mysocialapp.R;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMTextMessageBody;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,7 +89,17 @@ public class PrivateMessageAdapter extends BaseAdapter {
         // 获取消息的时间 并 格式化 然后给控件set上
         viewHolder.time.setText(dateFormat.format(emMessage.getMsgTime()));
         // 判断消息的发送方是不是自己
-        if (!MYUSER.equals(emMessage.getFrom())) {
+        if (emMessage.getFrom().equals(emMessage.getUserName())) {
+
+            viewHolder.rightLay.setVisibility(View.GONE);
+            viewHolder.leftLay.setVisibility(View.VISIBLE);
+            // 获取消息对象中的消息体 并强转成 文本消息体
+            // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
+            viewHolder.leftName.setText(emMessage.getUserName());
+
+            EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
+            viewHolder.leftContent.setText(txt.getMessage());
+        } else {
             viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
             viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
             // 设置用户名和内容
@@ -97,16 +109,6 @@ public class PrivateMessageAdapter extends BaseAdapter {
             EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
             viewHolder.rightContent.setText(txt.getMessage());
 
-        } else {
-            viewHolder.rightLay.setVisibility(View.GONE);
-            viewHolder.leftLay.setVisibility(View.VISIBLE);
-
-            // 获取消息对象中的消息体 并强转成 文本消息体
-            // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
-            viewHolder.leftName.setText(emMessage.getUserName());
-
-            EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
-            viewHolder.leftContent.setText(txt.getMessage());
         }
     }
 
@@ -131,6 +133,5 @@ public class PrivateMessageAdapter extends BaseAdapter {
             rightImg = (ImageView) view.findViewById(R.id.iv_mes_item_right);
 
         }
-
     }
 }

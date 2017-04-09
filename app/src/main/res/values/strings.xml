@@ -33,6 +33,7 @@
     <string name="music">音乐</string>
     <string name="picture">图片</string>
     <string name="video">视频</string>
+    <string name="yuYin">语音</string>
     <string name="returnLogin">退出当前账号</string>
 
     <!--item_chat_list-->
@@ -53,4 +54,21 @@
     <string name="shou">我的收藏</string>
     <string name="xiang">我的相册</string>
     <string name="wen">我的文件</string>
+
+    <!--activity_group-->
+    <string name="sid">输入ID</string>
+    <string name="find">邀请</string>
+    <string name="member">群成员</string>
+
+    <!--activity_create_group-->
+    <string name="groupQun">群名称 :</string>
+    <string name="zi">2~10个汉字或字母</string>
+    <string name="create">创建</string>
+
+    <!--activity_add_friend-->
+    <string name="good">请输入好友帐号/ID</string>
+    <string name="reason">添加理由</string>
+    <string name="findAdd">查找 并 添加</string>
+
+
 </resources>

@@ -13,6 +13,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/tv_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/lian"
+            android:textColor="@color/blue"
+            android:textSize="20dp"
+            android:visibility="gone" />
+
         <android.support.v4.view.ViewPager
             android:id="@+id/viewPager_pager"
             android:layout_width="match_parent"
@@ -35,7 +45,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="40sp"
                 android:layout_weight="1"
-                android:background="#ff0000"
                 android:gravity="center"
                 android:text="消息"
                 android:textSize="30dp" />
@@ -45,7 +54,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="40sp"
                 android:layout_weight="1"
-                android:background="#fff000"
                 android:gravity="center"
                 android:text="联系人"
                 android:textSize="30dp" />
@@ -55,7 +63,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="40sp"
                 android:layout_weight="1"
-                android:background="#00ff00"
                 android:gravity="center"
                 android:text="设置"
                 android:textSize="30dp" />

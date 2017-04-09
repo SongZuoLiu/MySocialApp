@@ -18,19 +18,23 @@ import android.widget.Toast;
 import com.example.administrator.mysocialapp.R;
 import com.example.administrator.mysocialapp.act.BaseActivity;
 import com.example.administrator.mysocialapp.act.LoginActivity;
+import com.example.administrator.mysocialapp.act.MainActivity;
 import com.example.administrator.mysocialapp.act.PrivateMessageActivity;
 import com.example.administrator.mysocialapp.adapter.ChatListAdapter;
 import com.example.administrator.mysocialapp.callback.ListItemClick;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMConversationListener;
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.util.NetUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,12 +43,11 @@ import java.util.Map;
  * 消息列表页
  */
 public class MessageFragment extends Fragment implements View.OnClickListener, EMCallBack, EMConversationListener,
-        EMConnectionListener, AdapterView.OnItemLongClickListener, ListItemClick {
+        AdapterView.OnItemLongClickListener, ListItemClick {
     private View view;
     private EditText username, count;
     private Button main_send, main_exit;
     private ListView main_list;
-    private View main_Connection_la;
     ChatListAdapter cle;
     ArrayList<EMConversation> list = new ArrayList<>();
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -73,7 +76,6 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
         main_send.setOnClickListener(this);
         main_exit.setOnClickListener(this);
 
-        main_Connection_la = view.findViewById(R.id.main_Connection_lay);
         main_list.setOnItemLongClickListener(this);
         //main_list.setOnItemClickListener(this);
 
@@ -88,6 +90,7 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
                     @Override
                     public void run() {
                         swipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(getActivity(), "数据已更新", Toast.LENGTH_SHORT).show();
                     }
                 }, 3000);
             }
@@ -190,34 +193,6 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
     }
 
     //--------------------------------------------------------------
-    // 与环信服务器连接成功后 调用
-    @Override
-    public void onConnected() {
-        // 运行UI线程
-        getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(getActivity(), "连接成功", Toast.LENGTH_SHORT).show();
-                // 给这个控件设置 可见状态 为 完全隐藏
-                main_Connection_la.setVisibility(View.GONE);
-            }
-        });
-    }
-
-    // 与环信服务器连接断开后 调用   (这个目前还没跑通，没实现)
-    @Override
-    public void onDisconnected(int i) {
-        // 运行UI线程
-        getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                // 提示 连接已断开
-                Toast.makeText(getActivity(), "您的网络处于断开状态", Toast.LENGTH_SHORT);
-                /// 给 main_Connection_la 控件设置可见状态为 可见
-                main_Connection_la.setVisibility(View.VISIBLE);
-            }
-        });
-    }
-
-    //--------------------------------------------------------------
     // listView的item 长按事件
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -231,8 +206,8 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
         return false;
     }
 
-    //--------------------------------------------------------------
-    // listView的 item 点击事件
+    //----------如果有类似删除的侧滑就不用下方被注释的，就需要写个接口来监听跳转(这里的接口是ListItemClick)-------------------
+    // ① listView的 item 点击事件
 //    @Override
 //    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //        Intent it = new Intent(getActivity(), PrivateMessageActivity.class);
@@ -242,15 +217,18 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
 //            // 把需要传递到下一个页面的数据 put到 intent里面
 //            it.putExtra("groupId", emc.getUserName());
 //        } else {
-//            // 把需要传递到下一个页面的数据 put到 intent里面
+//            // 把需要传递到下一个`页面的数据 put到 intent里面
 //            it.putExtra("username", emc.getUserName());
 //        }
 //        startActivity(it);
 //    }
-
+    //②用接口实现的
     @Override
     public void onClick(int id) {
-        ((BaseActivity) getActivity()).intentPrivateMessage(list.get(id).getUserName());
+        list.get(id).getType();
+        //((BaseActivity) getActivity()).intentPrivateMessage(list.get(id).getUserName());
+        //如果写草稿就写成下方这个
+        ((MainActivity) getActivity()).intentPrivateMessage(list.get(id).getUserName());
     }
 
 
@@ -287,5 +265,10 @@ public class MessageFragment extends Fragment implements View.OnClickListener, E
         };
         // 主要的（使用这个规格来排序）
         Collections.sort(list, comp);
+    }
+
+    //------------------------草稿-------------------------------------
+    public void setChatText(HashMap<String, String> textMap) {
+        cle.setTextMap(textMap);
     }
 }

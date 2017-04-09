@@ -4,20 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/main_Connection_lay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="15sp"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lian" />
-    </LinearLayout>
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -65,9 +51,10 @@
     <View
         android:id="@+id/textView2"
         android:layout_width="match_parent"
-        android:layout_height="2px"
+        android:layout_height="2dp"
         android:layout_marginTop="10dp"
         android:background="#000000" />
+
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/Swipe_srf"
@@ -80,5 +67,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.v4.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>

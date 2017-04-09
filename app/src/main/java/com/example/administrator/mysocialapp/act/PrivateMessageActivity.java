@@ -1,11 +1,18 @@
 package com.example.administrator.mysocialapp.act;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,16 +30,18 @@ import java.util.List;
 /**
  * 个人聊天详情页
  */
-public class PrivateMessageActivity extends BaseActivity implements View.OnClickListener, EMMessageListener, EMCallBack {
-    private TextView textView, titleName;
+public class PrivateMessageActivity extends BaseActivity implements View.OnClickListener, EMMessageListener, EMCallBack, AdapterView.OnItemLongClickListener {
+    private TextView titleName;
     private ListView msgShowList;
     private EditText textEdit;
-    private Button sendBtn;
-    private Button togroupBtn;
-    private String userName;
-    private String groupId;
-    private List<EMMessage> messages=new ArrayList<>();
+    private ImageView imageView;
+    private Button sendBtn, btn_pictures, btn_videos, btn_yuYin;
+    private String userName, groupId;
+    private List<EMMessage> messages = new ArrayList<>();
     private PrivateMessageAdapter privateMessageAdapter;
+    EMConversation conversation;
+
+    String text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,15 +55,61 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         initListView();
     }
 
+
+    @Override
+    public void onBackPressed() {
+        //text = editText.getText().toString();
+        Intent intent = new Intent();
+        intent.putExtra("text", text);
+        intent.putExtra("userName", userName);
+        setResult(RESULT_OK, intent);
+        super.onBackPressed();
+    }
+
     private void initView() {
         textEdit = (EditText) findViewById(R.id.private_message_editText);
         msgShowList = (ListView) findViewById(R.id.private_message_lv);
         sendBtn = (Button) findViewById(R.id.private_message_send_btn);
+        imageView = (ImageView) findViewById(R.id.private_message_title_right);
+        imageView.setOnClickListener(this);
+        //------------------------草稿-------------------------------------
+        userName = getIntent().getStringExtra("userName");
+        text = getIntent().getStringExtra("text");
 
+
+        if (!TextUtils.isEmpty(text)) {
+            textEdit.setText(text);
+            textEdit.setSelection(textEdit.getText().length());
+        }
+
+        textEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                text = s.toString();
+            }
+        });
+        //-------------------------------------------------------------
+        btn_pictures = (Button) findViewById(R.id.btn_pictures);
+        btn_videos = (Button) findViewById(R.id.btn_videos);
+        btn_yuYin = (Button) findViewById(R.id.btn_yuYin);
+        btn_pictures.setOnClickListener(this);
+        btn_videos.setOnClickListener(this);
+        btn_yuYin.setOnClickListener(this);
+
+        msgShowList.setOnItemLongClickListener(this);
         msgShowList.setSelection(msgShowList.getBottom());// 实现滑动list的效果
         sendBtn.setOnClickListener(this);
-        togroupBtn = (Button) findViewById(R.id.private_message_send_btn);
-        togroupBtn.setOnClickListener(this);
+        btn_videos = (Button) findViewById(R.id.private_message_send_btn);
 
         titleName = (TextView) findViewById(R.id.private_message_title_name);
     }
@@ -70,6 +125,13 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                     e.printStackTrace();
                 }
                 textEdit.setText("");
+                conversation.setExtField(""); //-------草稿--------
+                privateMessageAdapter.notifyDataSetChanged();
+                break;
+            case R.id.private_message_title_right:
+                Intent intent = new Intent(PrivateMessageActivity.this, GroupActivity.class);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
                 break;
         }
     }
@@ -94,6 +156,7 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         message.setMessageStatusCallback(this);
         // 3.发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
+        text="";
         addMessageList(message);
     }
 
@@ -125,17 +188,16 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
 
     // 获取聊天记录
     private void initData() {
-
         if (TextUtils.isEmpty(groupId)) {
             // 获取单个聊天
-            EMConversation conversation = EMClient.getInstance()
+            conversation = EMClient.getInstance()
                     .chatManager().getConversation(userName);
 
             // 获取此会话的所有消息
             messages = conversation.getAllMessages();
         } else {
             // 获取单个聊天
-            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(groupId);
+            conversation = EMClient.getInstance().chatManager().getConversation(groupId);
             if (conversation != null) {
                 // 获取此会话的所有消息
                 messages = conversation.getAllMessages();
@@ -143,6 +205,20 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                 messages = new ArrayList<EMMessage>();
             }
         }
+    }
+
+    //--------------------------------------------------------------
+    // listView的item 长按事件
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        // 获取点击事件的item内容数据
+        EMMessage msg = (EMMessage) privateMessageAdapter.getItem((int) id);
+        // 删除和某个user会话，如果需要保留聊天记录，传false
+        conversation.removeMessage(msg.getMsgId());
+        messages.remove((int) id);
+        // 刷新listView
+        privateMessageAdapter.notifyDataSetChanged();
+        return false;
     }
 
     //-------------------(接收消息)-------------------------------
@@ -197,4 +273,6 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     public void onProgress(int i, String s) {
 
     }
+
+
 }
