@@ -1,13 +1,13 @@
 package com.example.administrator.mysocialapp.act;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -17,7 +17,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.mysocialapp.R;
+import com.example.administrator.mysocialapp.adapter.PrivateImageSelectAdapter;
 import com.example.administrator.mysocialapp.adapter.PrivateMessageAdapter;
+import com.example.administrator.mysocialapp.fragment.PrivateImageSelectFragment;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
@@ -35,13 +37,16 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     private ListView msgShowList;
     private EditText textEdit;
     private ImageView imageView;
-    private Button sendBtn, btn_pictures, btn_videos, btn_yuYin;
+    private Button sendBtn, btn_pictures, btn_photo, btn_yuYin;
     private String userName, groupId;
     private List<EMMessage> messages = new ArrayList<>();
     private PrivateMessageAdapter privateMessageAdapter;
     EMConversation conversation;
 
+    FragmentManager fragmentManager;
+    PrivateImageSelectFragment privateImageSelectFragment;
     String text;
+    FragmentTransaction transaction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +58,20 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         initView();
         setTitleName();
         initListView();
+        InitFragment();
     }
 
+
+    private void InitFragment() {
+        fragmentManager = getSupportFragmentManager();
+        privateImageSelectFragment = new PrivateImageSelectFragment();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EMClient.getInstance().chatManager().removeMessageListener(this);
+    }
 
     @Override
     public void onBackPressed() {
@@ -100,16 +117,16 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         });
         //-------------------------------------------------------------
         btn_pictures = (Button) findViewById(R.id.btn_pictures);
-        btn_videos = (Button) findViewById(R.id.btn_videos);
+        btn_photo = (Button) findViewById(R.id.btn_photo);
         btn_yuYin = (Button) findViewById(R.id.btn_yuYin);
         btn_pictures.setOnClickListener(this);
-        btn_videos.setOnClickListener(this);
+        btn_photo.setOnClickListener(this);
         btn_yuYin.setOnClickListener(this);
 
         msgShowList.setOnItemLongClickListener(this);
         msgShowList.setSelection(msgShowList.getBottom());// 实现滑动list的效果
         sendBtn.setOnClickListener(this);
-        btn_videos = (Button) findViewById(R.id.private_message_send_btn);
+        btn_photo = (Button) findViewById(R.id.private_message_send_btn);
 
         titleName = (TextView) findViewById(R.id.private_message_title_name);
     }
@@ -132,6 +149,19 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                 Intent intent = new Intent(PrivateMessageActivity.this, GroupActivity.class);
                 intent.putExtra("groupId", groupId);
                 startActivity(intent);
+                break;
+            case R.id.btn_pictures:
+                //判断底部fragment是否添加过  如果有则 删除fragment 反之 添加
+                if (privateImageSelectFragment.isAdded()) {
+                    transaction = fragmentManager.beginTransaction();
+                    transaction.remove(privateImageSelectFragment);
+                    transaction.commit();
+                } else {
+                    transaction = fragmentManager.beginTransaction();
+                    transaction.replace(R.id.message_bottom_fragment_lay, privateImageSelectFragment);
+                    transaction.commit();
+                }
+
                 break;
         }
     }
@@ -156,7 +186,7 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         message.setMessageStatusCallback(this);
         // 3.发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
-        text="";
+        text = "";
         addMessageList(message);
     }
 

@@ -8,8 +8,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.administrator.mysocialapp.R;
@@ -35,20 +39,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private LinkManFragment lmf;
     private SetFragment sf;
     FragmentManager fm;
-    private TextView tv_textView, tv_message, tv_linkman, tv_set;
+    private ImageView tv_message, tv_linkman, tv_set;
+    private TextView tv_textView;
     private ViewPager viewpager;
     private List<Fragment> list = new ArrayList<>();
     private HashMap<String, String> textMap = new HashMap<>();
-    private String  str;
-
+    private String str;
+    private View ll_lineL;
+    ScaleAnimation sa;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // 注册消息监听
         init();
-        EMClient.getInstance().addConnectionListener(this);
+        EMClient.getInstance().addConnectionListener(this);// 注册消息监听
         initFragment();
+        testScaleBy();
     }
 
     //--------------------------------------------------------------
@@ -67,10 +73,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     //--------------------------------------------------------------
     private void init() {
+        ll_lineL = findViewById(R.id.ll_lineL);
         viewpager = (ViewPager) findViewById(R.id.viewPager_pager);
-        tv_message = (TextView) findViewById(R.id.tv_message);
-        tv_linkman = (TextView) findViewById(R.id.tv_linkman);
-        tv_set = (TextView) findViewById(R.id.tv_set);
+        tv_message = (ImageView) findViewById(R.id.tv_message);
+        tv_linkman = (ImageView) findViewById(R.id.tv_linkman);
+        tv_set = (ImageView) findViewById(R.id.tv_set);
         tv_message.setOnClickListener(this);
         tv_linkman.setOnClickListener(this);
         tv_set.setOnClickListener(this);
@@ -112,14 +119,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             case R.id.tv_message:
                 viewpager.setCurrentItem(0);
                 NotificationsBackGroud(viewpager.getCurrentItem());
+                tv_message.setAnimation(sa);
+                tv_message.startAnimation(sa);
                 break;
             case R.id.tv_linkman:
                 viewpager.setCurrentItem(1);
                 NotificationsBackGroud(viewpager.getCurrentItem());
+                tv_linkman.setAnimation(sa);
+                tv_linkman.startAnimation(sa);
                 break;
             case R.id.tv_set:
                 viewpager.setCurrentItem(2);
                 NotificationsBackGroud(viewpager.getCurrentItem());
+                tv_set.setAnimation(sa);
+                tv_set.startAnimation(sa);
                 break;
         }
     }
@@ -169,21 +182,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     //----通知栏背景色---
     private void NotificationsBackGroud(int i) {
         if (i == 0) {
-            tv_message.setBackgroundResource(R.color.colorPrimary);
-            tv_linkman.setBackgroundResource(R.color.colorAccent);
-            tv_set.setBackgroundResource(R.color.colorAccent);
-
-        }
-        if (i == 1) {
             tv_message.setBackgroundResource(R.color.colorAccent);
             tv_linkman.setBackgroundResource(R.color.colorPrimary);
-            tv_set.setBackgroundResource(R.color.colorAccent);
-
+            tv_set.setBackgroundResource(R.color.colorPrimary);
+            tv_message.setAnimation(sa);
+            tv_message.startAnimation(sa);
         }
-        if (i == 2) {
-            tv_message.setBackgroundResource(R.color.colorAccent);
+        if (i == 1) {
+            tv_message.setBackgroundResource(R.color.colorPrimary);
             tv_linkman.setBackgroundResource(R.color.colorAccent);
             tv_set.setBackgroundResource(R.color.colorPrimary);
+            tv_linkman.setAnimation(sa);
+            tv_linkman.startAnimation(sa);
+        }
+        if (i == 2) {
+            tv_message.setBackgroundResource(R.color.colorPrimary);
+            tv_linkman.setBackgroundResource(R.color.colorPrimary);
+            tv_set.setBackgroundResource(R.color.colorAccent);
+            tv_set.setAnimation(sa);
+            tv_set.startAnimation(sa);
         }
     }
 
@@ -242,7 +259,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case 101:
-                  str=data.getStringExtra("userName");
+                str = data.getStringExtra("userName");
                 textMap.put(str, data.getStringExtra("text"));
                 try {
                     if (TextUtils.isEmpty(data.getStringExtra("text"))) {
@@ -254,5 +271,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 mf.setChatText(textMap);
                 break;
         }
+    }
+
+    //------------------------动画-------------------------------------
+    private void testScaleBy() {
+        sa = new ScaleAnimation(1.3f, 1.6f, 1.3f, 1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_PARENT, 0.5f);
+        sa.setDuration(2000);
+        sa.setFillAfter(true);//设置 当动画结束后 保持动画结束时的状态
     }
 }

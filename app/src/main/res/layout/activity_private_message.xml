@@ -86,11 +86,11 @@
             android:text="@string/picture" />
 
         <Button
-            android:id="@+id/btn_videos"
+            android:id="@+id/btn_photo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="@string/video" />
+            android:text="@string/photo" />
 
         <Button
             android:id="@+id/btn_yuYin"
@@ -99,4 +99,10 @@
             android:layout_marginLeft="30dp"
             android:text="@string/yuYin" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/message_bottom_fragment_lay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
 </LinearLayout>

@@ -13,6 +13,7 @@
     <string name="passwordSs">请再次输入密码</string>
     <string name="read">我已阅读并同意服务条款</string>
     <string name="registerEs">注册</string>
+    <string name="yan">验证码</string>
 
     <!--activity_message_list-->
     <string name="id">ID</string>
@@ -30,10 +31,11 @@
 
     <!--activity_set_fragment-->
     <string name="person">个人资料</string>
-    <string name="music">音乐</string>
+    <string name="hong">发红包</string>
     <string name="picture">图片</string>
-    <string name="video">视频</string>
+    <string name="photo">摄像</string>
     <string name="yuYin">语音</string>
+    <string name="music">音乐</string>
     <string name="returnLogin">退出当前账号</string>
 
     <!--item_chat_list-->
@@ -70,5 +72,8 @@
     <string name="reason">添加理由</string>
     <string name="findAdd">查找 并 添加</string>
 
+
+    <string name="video">视频</string>
+    <string name="jzz">加载中...</string>
 
 </resources>
