@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -15,9 +18,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.administrator.mysocialapp.R;
-import com.example.administrator.mysocialapp.adapter.PrivateImageSelectAdapter;
 import com.example.administrator.mysocialapp.adapter.PrivateMessageAdapter;
 import com.example.administrator.mysocialapp.fragment.PrivateImageSelectFragment;
 import com.hyphenate.EMCallBack;
@@ -42,7 +45,9 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     private List<EMMessage> messages = new ArrayList<>();
     private PrivateMessageAdapter privateMessageAdapter;
     EMConversation conversation;
-
+    /************
+     * 点击发送图片按钮所用的对象
+     *********************/
     FragmentManager fragmentManager;
     PrivateImageSelectFragment privateImageSelectFragment;
     String text;
@@ -59,14 +64,65 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         setTitleName();
         initListView();
         InitFragment();
+
+        actionBar();
+    }
+
+    //-------------------标题栏的返回键  选择框-------------------------------------------
+    private void actionBar() {
+        try {
+            //getSupportActionBar().setHomeAsUpIndicator();//设置返回键的图片(很少用)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(userName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //选择框
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Intent intent = new Intent();
+                intent.putExtra("text", text);
+                intent.putExtra("userName", userName);
+                setResult(RESULT_OK, intent);
+                finish();
+                return true;
+            case R.id.test1:
+                Toast.makeText(PrivateMessageActivity.this, "扫一扫", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.test2:
+                Toast.makeText(PrivateMessageActivity.this, "收付款", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.test3:
+                Toast.makeText(PrivateMessageActivity.this, "发起群聊", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.privatemessageright, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
 
+    //--------------------------------------------------------------
+
+    /************
+     * 点击发送图片按钮所用的
+     *************************/
     private void InitFragment() {
         fragmentManager = getSupportFragmentManager();
         privateImageSelectFragment = new PrivateImageSelectFragment();
     }
 
+    /********************************************************/
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -92,7 +148,6 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         //------------------------草稿-------------------------------------
         userName = getIntent().getStringExtra("userName");
         text = getIntent().getStringExtra("text");
-
 
         if (!TextUtils.isEmpty(text)) {
             textEdit.setText(text);
@@ -150,24 +205,61 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                 intent.putExtra("groupId", groupId);
                 startActivity(intent);
                 break;
+            /************点击底部的发送图片按钮所进行的判断*********************/
             case R.id.btn_pictures:
                 //判断底部fragment是否添加过  如果有则 删除fragment 反之 添加
                 if (privateImageSelectFragment.isAdded()) {
-                    transaction = fragmentManager.beginTransaction();
-                    transaction.remove(privateImageSelectFragment);
-                    transaction.commit();
-                } else {
-                    transaction = fragmentManager.beginTransaction();
-                    transaction.replace(R.id.message_bottom_fragment_lay, privateImageSelectFragment);
-                    transaction.commit();
-                }
-
-                break;
+                closeImgFragment();
+            } else {
+                transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.privateMessage_bottom_fragment_lay, privateImageSelectFragment);
+                transaction.addToBackStack("message_bottom_fragment_lay");
+                transaction.commit();
+            }
+            break;
         }
     }
 
-    //--------------------------------------------------------------
-    // 发送消息的方法
+    private void closeImgFragment() {
+        transaction = fragmentManager.beginTransaction();
+        transaction.remove(privateImageSelectFragment);
+        transaction.commit();
+        //从fragment的返回栈中移除fragment
+        fragmentManager.popBackStackImmediate("privateMessage_bottom_fragment_lay", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    }
+    //-------------------发送图片-------------------------------------------
+
+    /**
+     * @param imgPath     图片路径
+     * @param isThumbnail 是否发送原图  true 原图  false 缩略图
+     */
+    public void sendImage(String imgPath, boolean isThumbnail) {
+        EMMessage message = EMMessage.createImageSendMessage(imgPath, isThumbnail, userName);
+        sendMessage(message);
+    }
+
+    private void sendMessage(EMMessage message) {
+        //如果是群聊，设置chattype，默认是单聊
+//                if (chatType == CHATTYPE_GROUP)
+        message.setChatType(EMMessage.ChatType.Chat);
+        message.setMessageStatusCallback(this);
+
+        //发送消息
+        EMClient.getInstance()
+                .chatManager()
+                .sendMessage(message);
+        //图片发送之后 关闭图片选择fragment
+        if (privateImageSelectFragment.isAdded()) {
+            closeImgFragment();
+        }
+        messages.add(message);
+
+        //调用刷新消息列表的方法
+        privateMessageAdapter.notifyDataSetChanged();
+    }
+
+
+    //-----------------发送消息文本的方法---------------------------------------------
     private void sendTxt(String str) {
         EMMessage message;
         if (TextUtils.isEmpty(userName)) {
@@ -290,13 +382,13 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     //实现EMCallBack接口
     @Override
     public void onSuccess() { //控件隐藏
-
+        Log.e("onSuccess", "onSuccess");
     }
 
     //一般要写一个红色叹号
     @Override
     public void onError(int i, String s) {
-
+        Log.e("onError", "onError" + i + " " + s);
     }
 
     @Override

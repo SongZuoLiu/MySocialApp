@@ -44,7 +44,7 @@
 
             <ImageView
                 android:id="@+id/tv_message"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -52,7 +52,7 @@
 
             <ImageView
                 android:id="@+id/tv_linkman"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -60,7 +60,7 @@
 
             <ImageView
                 android:id="@+id/tv_set"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"

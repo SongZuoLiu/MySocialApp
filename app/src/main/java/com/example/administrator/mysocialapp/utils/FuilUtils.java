@@ -29,6 +29,7 @@ public class FuilUtils {
             String height = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.HEIGHT));
             list.add(data);
         }
+        cursor.close();
         return list;
     }
 }

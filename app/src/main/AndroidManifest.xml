@@ -19,6 +19,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".MyApplication"
@@ -60,15 +62,18 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".act.MainActivity"
-            android:launchMode="singleTask"/>
+        <activity
+            android:name=".act.MainActivity"
+            android:launchMode="singleTask" />
         <activity android:name=".act.LoginActivity" />
         <activity android:name=".act.RegisterActivity" />
-        <activity android:name=".act.PrivateMessageActivity"
-            android:launchMode="singleTask"/>
+        <activity
+            android:name=".act.PrivateMessageActivity"
+            android:launchMode="singleTask" />
         <activity android:name=".act.GroupActivity" />
         <activity android:name=".act.CreateGroupActivity" />
-        <activity android:name=".act.AddFriendActivity"></activity>
+        <activity android:name=".act.AddFriendActivity" />
+        <activity android:name=".act.PictureBigActivity"></activity>
     </application>
 
 </manifest>

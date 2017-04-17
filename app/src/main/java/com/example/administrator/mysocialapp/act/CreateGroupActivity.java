@@ -1,6 +1,9 @@
 package com.example.administrator.mysocialapp.act;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,21 +17,24 @@ import com.example.administrator.mysocialapp.R;
 import com.example.administrator.mysocialapp.adapter.CreateGroupAdapter;
 import com.example.administrator.mysocialapp.bean.CreatGroupBean;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.exceptions.HyphenateException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 创建群组界面
  */
-public class CreateGroupActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class CreateGroupActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
     private EditText editText;
     private Button button;
     private ListView listView;
     private List<EMGroup> groupsList;
     CreateGroupAdapter createGroupAdapter;
+    ArrayList<EMGroup> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +51,7 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
 
         listView = (ListView) findViewById(R.id.lView);
         listView.setOnItemClickListener(this);
+        listView.setOnItemLongClickListener(this);
     }
 
     // -------------------------------------------------------
@@ -136,6 +143,42 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
         Intent intent = new Intent(CreateGroupActivity.this, cls);
         intent.putExtra("groupId", groupId);
         CreateGroupActivity.this.startActivity(intent);
+    }
+
+    // -------------------------------------------------------
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this.getApplicationContext());
+//        //AlertDialog.Builder builder = new AlertDialog.Builder(CreateGroupActivity.this);
+//        builder.setTitle("确认");
+//        builder.setMessage("是否确认解散该群？");
+//        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//
+//            }
+//        });
+//
+//        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.dismiss();
+//            }
+//        });
+        // 获取点击事件的item内容数据
+        EMGroup msg = groupsList.get(position);
+        try {
+            //解散群组
+            EMClient.getInstance().groupManager().destroyGroup(msg.getGroupId());
+            Toast.makeText(CreateGroupActivity.this, "群组解散成功", Toast.LENGTH_SHORT).show();
+        } catch (HyphenateException e) {
+            e.printStackTrace();
+        }
+        // 刷新listView
+        groupsList.remove(position);
+        createGroupAdapter.refAlls(list);
+        // 在本次事件内 消化掉手势
+        return false;
     }
 
 }

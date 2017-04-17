@@ -101,7 +101,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/message_bottom_fragment_lay"
+        android:id="@+id/privateMessage_bottom_fragment_lay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" />

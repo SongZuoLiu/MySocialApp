@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.administrator.mysocialapp.R;
+import com.example.administrator.mysocialapp.act.PrivateMessageActivity;
 import com.example.administrator.mysocialapp.adapter.PrivateImageSelectAdapter;
 import com.example.administrator.mysocialapp.utils.FuilUtils;
 
@@ -20,6 +21,8 @@ import java.util.HashSet;
 
 /**
  * Created by Administrator on 2017/4/10.
+ * <p>
+ * 个人聊天详情页 下的 点击发送图片 的Fragment
  */
 
 public class PrivateImageSelectFragment extends Fragment implements View.OnClickListener {
@@ -61,11 +64,18 @@ public class PrivateImageSelectFragment extends Fragment implements View.OnClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            //发送图片按钮 点击事件
             case R.id.fragment_imageselect_send_btn:
+                //获取选中的所有图片途径
                 HashSet<String> checkList = privateImageSelectAdapter.getCheckList();
+                //获取容器activity对象
+                PrivateMessageActivity pma=(PrivateMessageActivity) getActivity();
+
                 for (String str :
                         checkList) {
                     Log.e("checkList", str);
+                    //调用activity中的发送图片方法
+                    pma.sendImage(str,false);
                 }
                 break;
         }

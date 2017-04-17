@@ -17,7 +17,6 @@
 
     <!--activity_message_list-->
     <string name="id">ID</string>
-    <string name="ml">消息列表</string>
     <string name="mess">Message</string>
     <string name="lian">您的连接已断开</string>
     <string name="returns">返回</string>

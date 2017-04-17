@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.administrator.mysocialapp.R;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
 
 import java.util.List;
@@ -28,6 +29,12 @@ public class CreateGroupAdapter extends BaseAdapter {
         this.list = list;
     }
 
+    //--------------------------------------------------------------
+    //生命周期
+    public void refAlls(List<EMGroup> list) {
+        this.list=list;
+        this.notifyDataSetChanged();
+    }
 
     @Override
     public int getCount() {

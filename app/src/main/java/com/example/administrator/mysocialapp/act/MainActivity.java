@@ -10,11 +10,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.administrator.mysocialapp.R;
 import com.example.administrator.mysocialapp.fragment.LinkManFragment;
@@ -44,17 +49,54 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private ViewPager viewpager;
     private List<Fragment> list = new ArrayList<>();
     private HashMap<String, String> textMap = new HashMap<>();
-    private String str;
-    private View ll_lineL;
+    private String str, text,userName;
+
     ScaleAnimation sa;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        userName = getIntent().getStringExtra("userName");
         init();
         EMClient.getInstance().addConnectionListener(this);// 注册消息监听
         initFragment();
-        testScaleBy();
+        //动画的缩放
+        testScaleBy(tv_message);
+        testScaleBy2(tv_linkman);
+        testScaleBy2(tv_set);
+    }
+
+    //选择框
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Intent intent = new Intent();
+                intent.putExtra("text", text);
+                intent.putExtra("userName", userName);
+                setResult(RESULT_OK, intent);
+                finish();
+                return true;
+            case R.id.test1:
+                Toast.makeText(MainActivity.this, "扫一扫", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.test2:
+                Toast.makeText(MainActivity.this, "收付款", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.test3:
+                Toast.makeText(MainActivity.this, "发起群聊", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.privatemessageright, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     //--------------------------------------------------------------
@@ -73,7 +115,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     //--------------------------------------------------------------
     private void init() {
-        ll_lineL = findViewById(R.id.ll_lineL);
         viewpager = (ViewPager) findViewById(R.id.viewPager_pager);
         tv_message = (ImageView) findViewById(R.id.tv_message);
         tv_linkman = (ImageView) findViewById(R.id.tv_linkman);
@@ -119,20 +160,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             case R.id.tv_message:
                 viewpager.setCurrentItem(0);
                 NotificationsBackGroud(viewpager.getCurrentItem());
-                tv_message.setAnimation(sa);
-                tv_message.startAnimation(sa);
+                //判断动画的缩放
+                if (viewpager.getCurrentItem() == 0) {
+                    testScaleBy(tv_message);
+                }
+                testScaleBy2(tv_linkman);
+                testScaleBy2(tv_set);
                 break;
             case R.id.tv_linkman:
                 viewpager.setCurrentItem(1);
                 NotificationsBackGroud(viewpager.getCurrentItem());
-                tv_linkman.setAnimation(sa);
-                tv_linkman.startAnimation(sa);
+                if (viewpager.getCurrentItem() == 1) {
+                    testScaleBy(tv_linkman);
+                }
+                testScaleBy2(tv_message);
+                testScaleBy2(tv_set);
                 break;
             case R.id.tv_set:
                 viewpager.setCurrentItem(2);
                 NotificationsBackGroud(viewpager.getCurrentItem());
-                tv_set.setAnimation(sa);
-                tv_set.startAnimation(sa);
+                if (viewpager.getCurrentItem() == 2) {
+                    testScaleBy(tv_set);
+                }
+                testScaleBy2(tv_message);
+                testScaleBy2(tv_linkman);
                 break;
         }
     }
@@ -185,22 +236,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             tv_message.setBackgroundResource(R.color.colorAccent);
             tv_linkman.setBackgroundResource(R.color.colorPrimary);
             tv_set.setBackgroundResource(R.color.colorPrimary);
-            tv_message.setAnimation(sa);
-            tv_message.startAnimation(sa);
+            //判断动画的缩放
+            if (viewpager.getCurrentItem() == 0) {
+                testScaleBy(tv_message);
+            }
+            testScaleBy2(tv_linkman);
+            testScaleBy2(tv_set);
         }
         if (i == 1) {
             tv_message.setBackgroundResource(R.color.colorPrimary);
             tv_linkman.setBackgroundResource(R.color.colorAccent);
             tv_set.setBackgroundResource(R.color.colorPrimary);
-            tv_linkman.setAnimation(sa);
-            tv_linkman.startAnimation(sa);
+            if (viewpager.getCurrentItem() == 1) {
+                testScaleBy(tv_linkman);
+            }
+            testScaleBy2(tv_message);
+            testScaleBy2(tv_set);
         }
         if (i == 2) {
             tv_message.setBackgroundResource(R.color.colorPrimary);
             tv_linkman.setBackgroundResource(R.color.colorPrimary);
             tv_set.setBackgroundResource(R.color.colorAccent);
-            tv_set.setAnimation(sa);
-            tv_set.startAnimation(sa);
+            if (viewpager.getCurrentItem() == 2) {
+                testScaleBy(tv_set);
+            }
+            testScaleBy2(tv_message);
+            testScaleBy2(tv_linkman);
         }
     }
 
@@ -274,9 +335,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     //------------------------动画-------------------------------------
-    private void testScaleBy() {
-        sa = new ScaleAnimation(1.3f, 1.6f, 1.3f, 1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_PARENT, 0.5f);
-        sa.setDuration(2000);
-        sa.setFillAfter(true);//设置 当动画结束后 保持动画结束时的状态
+    private void testScaleBy(View v) {
+        Animation scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.test_big);
+        v.setAnimation(scaleAnimation);
+        v.startAnimation(scaleAnimation);
+    }
+
+    private void testScaleBy2(View v) {
+        Animation scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.test_small);
+        v.setAnimation(scaleAnimation);
+        v.startAnimation(scaleAnimation);
     }
 }

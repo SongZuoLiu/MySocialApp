@@ -17,12 +17,15 @@ import java.util.HashSet;
 
 /**
  * Created by Administrator on 2017/4/10.
+ * <p>
+ * 个人聊天详情页 下的 点击发送图片 的fragment的适配器(选择图片  复选框)
  */
 
 public class PrivateImageSelectAdapter extends RecyclerView.Adapter<PrivateImageSelectAdapter.MyViewHolder> {
 
     private Context context;
     private ArrayList<String> list;
+    //存储被选中的图片
     private HashSet<String> checkList = new HashSet<>();
 
     public PrivateImageSelectAdapter(Context context, ArrayList<String> list) {
@@ -49,7 +52,7 @@ public class PrivateImageSelectAdapter extends RecyclerView.Adapter<PrivateImage
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        final String path = list.get(position);
+        final String path = list.get(position);   //图片路径
 
         //设置图片
         Glide.with(context).load(path)
@@ -74,6 +77,7 @@ public class PrivateImageSelectAdapter extends RecyclerView.Adapter<PrivateImage
         return list.size();
     }
 
+    //返回被选中的图片集合
     public HashSet<String> getCheckList() {
         return checkList;
     }
