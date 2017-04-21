@@ -1,7 +1,15 @@
 package com.example.administrator.mysocialapp.act;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
@@ -23,26 +31,44 @@ import android.widget.Toast;
 import com.example.administrator.mysocialapp.R;
 import com.example.administrator.mysocialapp.adapter.PrivateMessageAdapter;
 import com.example.administrator.mysocialapp.fragment.PrivateImageSelectFragment;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMVideoMessageBody;
 
+import org.wlf.filedownloader.FileDownloader;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * 个人聊天详情页
  */
 public class PrivateMessageActivity extends BaseActivity implements View.OnClickListener, EMMessageListener, EMCallBack, AdapterView.OnItemLongClickListener {
+    String newFileDir = Environment
+            .getExternalStorageDirectory()
+            .getAbsolutePath()
+            + File.separator
+            + "FileDownloader";
+
     private TextView titleName;
     private ListView msgShowList;
     private EditText textEdit;
     private ImageView imageView;
-    private Button sendBtn, btn_pictures, btn_photo, btn_yuYin;
+    private Button sendBtn, btn_pictures, btn_photo, btn_luX;
     private String userName, groupId;
-    private List<EMMessage> messages = new ArrayList<>();
+    ArrayList<EMMessage> messages = new ArrayList<>();
     private PrivateMessageAdapter privateMessageAdapter;
     EMConversation conversation;
     /************
@@ -52,6 +78,11 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     PrivateImageSelectFragment privateImageSelectFragment;
     String text;
     FragmentTransaction transaction;
+
+    //拍照
+    private static final int OPEN_IMAGE_CAMERA = 1001;
+    private File file;
+    private static final int OPEN_VIDEO_CAPTURE = 1002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +97,7 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         InitFragment();
 
         actionBar();
+
     }
 
     //-------------------标题栏的返回键  选择框-------------------------------------------
@@ -173,10 +205,10 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         //-------------------------------------------------------------
         btn_pictures = (Button) findViewById(R.id.btn_pictures);
         btn_photo = (Button) findViewById(R.id.btn_photo);
-        btn_yuYin = (Button) findViewById(R.id.btn_yuYin);
+        btn_luX = (Button) findViewById(R.id.btn_luX);
         btn_pictures.setOnClickListener(this);
         btn_photo.setOnClickListener(this);
-        btn_yuYin.setOnClickListener(this);
+        btn_luX.setOnClickListener(this);
 
         msgShowList.setOnItemLongClickListener(this);
         msgShowList.setSelection(msgShowList.getBottom());// 实现滑动list的效果
@@ -209,17 +241,144 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
             case R.id.btn_pictures:
                 //判断底部fragment是否添加过  如果有则 删除fragment 反之 添加
                 if (privateImageSelectFragment.isAdded()) {
-                closeImgFragment();
-            } else {
-                transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.privateMessage_bottom_fragment_lay, privateImageSelectFragment);
-                transaction.addToBackStack("message_bottom_fragment_lay");
-                transaction.commit();
-            }
-            break;
+                    closeImgFragment();
+                } else {
+                    transaction = fragmentManager.beginTransaction();
+                    transaction.replace(R.id.privateMessage_bottom_fragment_lay, privateImageSelectFragment);
+                    transaction.addToBackStack("message_bottom_fragment_lay");
+                    transaction.commit();
+                }
+                break;
+            case R.id.btn_photo:
+                Intent intent1 = new Intent();
+                intent1.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+//                intent1.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(
+//                        file));
+                file = new File(Environment
+                        .getExternalStorageDirectory()
+                        .getAbsoluteFile()
+                        + "/"
+                        + System.currentTimeMillis()
+                        + ".jpg");
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                startActivityForResult(intent1, OPEN_IMAGE_CAMERA);
+                break;
+            case R.id.btn_luX:
+                Intent caotureImageCamera = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                caotureImageCamera.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
+                startActivityForResult(caotureImageCamera, OPEN_VIDEO_CAPTURE);
+                break;
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case OPEN_IMAGE_CAMERA:
+                if (resultCode == RESULT_OK) {
+                    //拿到 camera 拍照后的图片
+                    Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+
+                    file = getBitMap(bitmap);
+
+                    sendImage(file.getAbsolutePath(), false);//这里是 发送 缩略图
+                }
+                break;
+            case OPEN_VIDEO_CAPTURE:
+                //获取视频路径
+                String path = getPath(data.getData());
+                // 实例化
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                // 设置数据源
+                try {
+                    mediaPlayer.setDataSource(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //获取时长
+                int duration = mediaPlayer.getDuration();
+
+                //实例化
+                MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+                //设置数据源
+                metadataRetriever.setDataSource(path);
+
+
+                //获取某一帧 图像()  并写入文件
+                file = getBitMap(metadataRetriever.getFrameAtTime(1000));
+                // 释放资源
+                metadataRetriever.release();
+                mediaPlayer.release();
+
+                if (resultCode == RESULT_OK) {
+                    EMMessage videoMsg = EMMessage.createVideoSendMessage(
+                            getPath(data.getData())  //视频路径
+//                            , Environment.getExternalStorageDirectory().getAbsolutePath()
+//                                    + "/1492697485238.jpg"  //目前是固定的本地图片
+                            , file.getAbsolutePath()     //视频预览图片路径
+                            , duration                  //视频时长
+                            , userName                 //用户名
+                    );
+                    sendMessage(videoMsg);
+                }
+                break;
+        }
+    }
+
+    private File getBitMap(Bitmap bitmap) {
+        try {
+            //创建文件对象
+            file = new File(Environment
+                    .getExternalStorageDirectory(),
+                    +System.currentTimeMillis()
+                            + ".jpg");
+            //开启这个文件的输出流
+            FileOutputStream out = new FileOutputStream(file);
+            //把bitmap内容写入输出流
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            System.out.print("_______保存的__sd____下___");
+            try {
+                //刷新输出流
+                out.flush();
+                //关闭输出流
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+        return file;
+    }
+
+    /**
+     * 根据视频文件的uri 获取path
+     *
+     * @param uri 视频文件uri
+     * @return 文件path
+     */
+    private String getPath(Uri uri) {
+        //定义 需要查询的字段
+        String[] projection = {MediaStore.Video.Media.DATA};
+        //查询该 Uri
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        //获取 所需字段 对应的列下标
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
+        //将 游标 指针移动到第一个
+        cursor.moveToFirst();
+        //返回 根据字段下标获取出来的数据
+        return cursor.getString(column_index);
+    }
+
+    //-----
     private void closeImgFragment() {
         transaction = fragmentManager.beginTransaction();
         transaction.remove(privateImageSelectFragment);
@@ -234,7 +393,9 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
      * @param isThumbnail 是否发送原图  true 原图  false 缩略图
      */
     public void sendImage(String imgPath, boolean isThumbnail) {
+        //创建image消息
         EMMessage message = EMMessage.createImageSendMessage(imgPath, isThumbnail, userName);
+        //发送
         sendMessage(message);
     }
 
@@ -252,10 +413,14 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
         if (privateImageSelectFragment.isAdded()) {
             closeImgFragment();
         }
+        //将消息添加到 数据源 消息集合中
         messages.add(message);
-
         //调用刷新消息列表的方法
         privateMessageAdapter.notifyDataSetChanged();
+        //调用刷新消息列表的方法
+//        MessageManager.getInsatance()
+//                .getMessageListListener()
+//                .refChatList();
     }
 
 
@@ -316,13 +481,13 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                     .chatManager().getConversation(userName);
 
             // 获取此会话的所有消息
-            messages = conversation.getAllMessages();
+            messages = (ArrayList<EMMessage>) conversation.getAllMessages();
         } else {
             // 获取单个聊天
             conversation = EMClient.getInstance().chatManager().getConversation(groupId);
             if (conversation != null) {
                 // 获取此会话的所有消息
-                messages = conversation.getAllMessages();
+                messages = (ArrayList<EMMessage>) conversation.getAllMessages();
             } else {
                 messages = new ArrayList<EMMessage>();
             }
@@ -356,6 +521,45 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
                 }
             }
         });
+        //---------视频--------------------
+        // 修改过 本地缩略图路径的 视频消息集合
+        ArrayList<EMMessage> list1 = new ArrayList<>();
+        // 遍历接受到的消息
+        for (EMMessage msg :
+                list) {
+            // 处理视频消息
+            switch (msg.getType()) {
+                case VIDEO:
+                    // 获得消息体
+                    EMVideoMessageBody emVideo = (EMVideoMessageBody) msg.getBody();
+                    // 文件名
+                    String name = System.currentTimeMillis() + ".jpg";
+                    // 下载视频缩略图
+                    FileDownloader.createAndStart(
+                            emVideo.getThumbnailUrl()
+                            , newFileDir
+                            , name);
+                    // 把本地路径设置给消息体
+                    emVideo.setLocalThumb(newFileDir + "/" + name);
+                    // 把消息体添加到 消息对象中
+                    msg.addBody(emVideo);
+                    // 把修改过的消息对象添加到集合中
+                    list1.add(msg);
+                    // 处理过的消息添加到数据源
+                    this.messages.add(msg);
+                    break;
+                default:
+                    // 添加到数据源
+                    this.messages.add(msg);
+                    break;
+            }
+        }
+        // 把消息导入到数据库
+        EMClient.getInstance().chatManager().importMessages(list1);
+        // 刷新listview
+        privateMessageAdapter.notifyDataSetChanged();
+        Log.e("onMessageReceived", "onMessageReceived" + list.size());
+
     }
 
     @Override
@@ -388,13 +592,11 @@ public class PrivateMessageActivity extends BaseActivity implements View.OnClick
     //一般要写一个红色叹号
     @Override
     public void onError(int i, String s) {
-        Log.e("onError", "onError" + i + " " + s);
+        Log.e("onError", "onError =" + i + " " + s);
     }
 
     @Override
     public void onProgress(int i, String s) {
 
     }
-
-
 }

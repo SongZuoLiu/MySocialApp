@@ -2,7 +2,9 @@ package com.example.administrator.mysocialapp.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.os.Environment;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,17 +16,20 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.administrator.mysocialapp.R;
 import com.example.administrator.mysocialapp.act.PictureBigActivity;
-import com.hyphenate.chat.EMConversation;
+import com.example.administrator.mysocialapp.act.VideoViewActivity;
+import com.hyphenate.EMCallBack;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMTextMessageBody;
+import com.hyphenate.chat.EMVideoMessageBody;
+
+import org.wlf.filedownloader.FileDownloader;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.zip.Inflater;
-
-import static com.example.administrator.mysocialapp.R.id.iv_mes_leftSendPicture;
 
 /**
  * Created by Administrator on 2017/4/4.
@@ -37,9 +42,7 @@ public class PrivateMessageAdapter extends BaseAdapter {
     private List<EMMessage> list;
     private String localUrl;
     private String pictureBigLocalUrl;
-
-    // TODO 暂时固定为自己的帐号，需写成 用户类 来存放
-    private static final String MYUSER = "Song";
+    EMVideoMessageBody em;
 
     // 构造方法 接收 上下文 和 数据源
     public PrivateMessageAdapter(Context context, List<EMMessage> list) {
@@ -66,7 +69,7 @@ public class PrivateMessageAdapter extends BaseAdapter {
 
     // ------------------------------------------------------------
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         EMMessage msg = list.get(position);
 
@@ -95,7 +98,7 @@ public class PrivateMessageAdapter extends BaseAdapter {
         }
 
         // 给控件设置数据 (调用下方的setViewContent方法)
-        setViewContent(viewHolder, (EMMessage) getItem(position));
+        setViewContent(viewHolder, (EMMessage) getItem(position), position);
         //---------------------------------------------------------------------
         //别人所发图片的放大
         final Intent intent = new Intent(context, PictureBigActivity.class);
@@ -114,14 +117,83 @@ public class PrivateMessageAdapter extends BaseAdapter {
                 context.startActivity(intent);
             }
         });
+
+        //------------------------对方接收视频---------------------------------------------
+        viewHolder.iv_mes_leftSendPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (em.downloadStatus()) {
+                    case DOWNLOADING:
+                        break;
+                    case SUCCESSED:
+//                        Intent intent = new Intent(context, VideoViewActivity.class);
+//                        intent.putExtra("rightPath", em.getLocalUrl());
+//                        context.startActivity(intent);
+                        break;
+                    case FAILED:
+                        break;
+                    case PENDING:
+                        HashMap<String, String> map = new HashMap<String, String>();
+                        if (!TextUtils.isEmpty(em.getSecret())) {
+                            map.put("share-secret", em.getSecret());
+                        }
+                        TestOtherSendVideo(map, position);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+        //------自己所发视频----
+        viewHolder.iv_mes_rightSendPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, VideoViewActivity.class);
+                EMVideoMessageBody body = (EMVideoMessageBody) list.get(position).getBody();
+                intent.putExtra("rightPath", body.getLocalUrl());
+                context.startActivity(intent);
+            }
+        });
         // 把View return回去
         return convertView;
+    }
+
+    private void TestOtherSendVideo(HashMap<String, String> map, int i) {
+        final EMVideoMessageBody body = (EMVideoMessageBody) list.get(i).getBody();
+        final String vs = Environment.getExternalStorageDirectory()
+                .getAbsolutePath() + "/" + System.currentTimeMillis() + ".mp4";
+
+        EMClient.getInstance().chatManager().downloadFile(
+                body.getRemoteUrl()
+                , vs
+                , map
+                , new EMCallBack() {
+                    @Override
+                    public void onSuccess() {
+                        Log.e("onSuccess", "onSuccess");
+
+                        Intent intent = new Intent(context, VideoViewActivity.class);
+                        intent.putExtra("leftPath", vs);
+                        context.startActivity(intent);
+                    }
+
+                    @Override
+                    public void onError(int i, String s) {
+                        Log.e("onError", "onError =" + i + " " + s);
+                    }
+
+                    @Override
+                    public void onProgress(int i, String s) {
+
+                    }
+                }
+        );
     }
 
 
     // ------------------------------------------------------------
     // 给控件设置数据的方法 (iewHolder控件对象，EMMessage消息对象)
-    private void setViewContent(ViewHolder viewHolder, EMMessage emMessage) {
+    private void setViewContent(ViewHolder viewHolder, EMMessage emMessage, final int position) {
         // 设置控件的可见状态
         viewHolder.timeLay.setVisibility(View.VISIBLE);
         // 实例化时间格式
@@ -131,58 +203,14 @@ public class PrivateMessageAdapter extends BaseAdapter {
 
         EMMessage.Type type = emMessage.getType();
         switch (type) {
-
             case TXT:
-                // 判断消息的发送方是不是自己
-                if (emMessage.getFrom().equals(emMessage.getUserName())) {
-
-                    viewHolder.rightLay.setVisibility(View.GONE);
-                    viewHolder.leftLay.setVisibility(View.VISIBLE);
-                    // 获取消息对象中的消息体 并强转成 文本消息体
-                    // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
-                    viewHolder.leftName.setText(emMessage.getUserName());
-
-                    EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
-                    viewHolder.leftContent.setText(txt.getMessage());
-                } else {
-                    viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
-                    viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
-                    // 设置用户名和内容
-                    viewHolder.rightName.setText(emMessage.getUserName());
-                    // 或 viewHolder.rightName.setText("我");
-                    // 获取消息对象中的消息体 并强转成 文本消息体
-                    EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
-                    viewHolder.rightContent.setText(txt.getMessage());
-                }
+                caseTXT(viewHolder, emMessage);
                 break;
             case IMAGE:
-                // 判断图片的发送方是不是自己
-                if (emMessage.getFrom().equals(emMessage.getUserName())) {
-
-                    viewHolder.rightLay.setVisibility(View.GONE);
-                    viewHolder.leftLay.setVisibility(View.VISIBLE);
-                    viewHolder.leftContent.setVisibility(View.GONE);
-                    viewHolder.iv_mes_leftSendPicture.setVisibility(View.VISIBLE);
-                    // 获取消息对象中的消息体 并强转成 文本消息体
-                    // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
-                    viewHolder.leftName.setText(emMessage.getUserName());
-                    EMImageMessageBody im = (EMImageMessageBody) emMessage.getBody();
-                    pictureBigLocalUrl = im.getThumbnailUrl();
-                    Glide.with(context).load(pictureBigLocalUrl).override(300, 200).
-                            into(viewHolder.iv_mes_leftSendPicture);
-
-                } else {
-                    EMImageMessageBody im = (EMImageMessageBody) emMessage.getBody();
-                    localUrl = im.getLocalUrl();
-                    viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
-                    viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
-                    // 设置用户名和内容
-                    viewHolder.rightContent.setVisibility(View.GONE);
-                    viewHolder.iv_mes_rightSendPicture.setVisibility(View.VISIBLE);
-                    viewHolder.rightName.setText(emMessage.getUserName());
-                    Glide.with(context).load(localUrl).override(300, 200).
-                            into(viewHolder.iv_mes_rightSendPicture);
-                }
+                caseIMAGE(viewHolder, emMessage);
+                break;
+            case VIDEO:
+                caseVIDEO(viewHolder, emMessage);
                 break;
         }
     }
@@ -208,9 +236,92 @@ public class PrivateMessageAdapter extends BaseAdapter {
             rightImg = (ImageView) view.findViewById(R.id.iv_mes_item_right);
             iv_mes_leftSendPicture = (ImageView) view.findViewById(R.id.iv_mes_leftSendPicture);
             iv_mes_rightSendPicture = (ImageView) view.findViewById(R.id.iv_mes_rightSendPicture);
-
         }
-
     }
 
+    // ----------------------①判断文本--------------------------------------
+    private void caseTXT(ViewHolder viewHolder, EMMessage emMessage) {
+        // 判断消息的发送方是不是自己
+        if (emMessage.getFrom().equals(emMessage.getUserName())) {
+
+            viewHolder.rightLay.setVisibility(View.GONE);
+            viewHolder.leftLay.setVisibility(View.VISIBLE);
+            // 获取消息对象中的消息体 并强转成 文本消息体
+            // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
+            viewHolder.leftName.setText(emMessage.getUserName());
+
+            EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
+            viewHolder.leftContent.setText(txt.getMessage());
+        } else {
+            viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
+            viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
+            // 设置用户名和内容
+            //viewHolder.rightName.setText(emMessage.getUserName());
+            viewHolder.rightName.setText("我");
+            // 获取消息对象中的消息体 并强转成 文本消息体
+            EMTextMessageBody txt = (EMTextMessageBody) emMessage.getBody();
+            viewHolder.rightContent.setText(txt.getMessage());
+        }
+    }
+
+    // -----------------------②判断图片-------------------------------------
+    private void caseIMAGE(ViewHolder viewHolder, EMMessage emMessage) {
+        // 判断图片的发送方是不是自己
+        if (emMessage.getFrom().equals(emMessage.getUserName())) {
+
+            viewHolder.rightLay.setVisibility(View.GONE);
+            viewHolder.leftLay.setVisibility(View.VISIBLE);
+            viewHolder.leftContent.setVisibility(View.GONE);
+            viewHolder.iv_mes_leftSendPicture.setVisibility(View.VISIBLE);
+            // 获取消息对象中的消息体 并强转成 文本消息体
+            // 需加其他消息类型viewHolder.leftName.setText(emMessage.getUserName());
+            viewHolder.leftName.setText(emMessage.getUserName());
+            EMImageMessageBody im = (EMImageMessageBody) emMessage.getBody();
+            pictureBigLocalUrl = im.getThumbnailUrl();
+            Glide.with(context).load(pictureBigLocalUrl).override(300, 200).
+                    into(viewHolder.iv_mes_leftSendPicture);
+
+        } else {
+            EMImageMessageBody im = (EMImageMessageBody) emMessage.getBody();
+            localUrl = im.getLocalUrl();
+            viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
+            viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
+            // 设置用户名和内容
+            viewHolder.rightContent.setVisibility(View.GONE);
+            viewHolder.iv_mes_rightSendPicture.setVisibility(View.VISIBLE);
+            viewHolder.rightName.setText("我");
+            Glide.with(context).load(localUrl).override(300, 200).
+                    into(viewHolder.iv_mes_rightSendPicture);
+        }
+    }
+
+    // -----------------------③判断视频-------------------------------------
+    private void caseVIDEO(ViewHolder viewHolder, EMMessage emMessage) {
+        // 判断视频的发送方是不是自己
+        if (emMessage.getFrom().equals(emMessage.getUserName())) {
+
+            viewHolder.rightLay.setVisibility(View.GONE);
+            viewHolder.leftLay.setVisibility(View.VISIBLE);
+            viewHolder.leftContent.setVisibility(View.GONE);
+            viewHolder.iv_mes_leftSendPicture.setVisibility(View.VISIBLE);
+            viewHolder.leftName.setText(emMessage.getUserName());
+            em = (EMVideoMessageBody) emMessage.getBody();
+
+            Glide.with(context)
+                    .load(R.mipmap.ic_launcher)
+                    .override(300, 200).
+                    into(viewHolder.iv_mes_leftSendPicture);
+
+        } else {
+            final EMVideoMessageBody em = (EMVideoMessageBody) emMessage.getBody();
+            viewHolder.rightLay.setVisibility(View.VISIBLE);// 左边可见
+            viewHolder.leftLay.setVisibility(View.GONE);// 右边隐藏
+            // 设置用户名和内容
+            viewHolder.rightContent.setVisibility(View.GONE);
+            viewHolder.iv_mes_rightSendPicture.setVisibility(View.VISIBLE);
+            viewHolder.rightName.setText("我");
+            Glide.with(context).load(em.getLocalUrl()).override(300, 200).
+                    into(viewHolder.iv_mes_rightSendPicture);
+        }
+    }
 }

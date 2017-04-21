@@ -8,7 +8,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.example.administrator.mysocialapp.R;
 
-//图片点击一下就放大到全屏
+//图片点击一下就放大到全屏      (目前不完善，这个只能使最后一个图片放大，其他图片和它一样)
 //(这个 与 个人聊天适配器 相调用)
 public class PictureBigActivity extends AppCompatActivity {
     private ImageView im_view;
@@ -18,10 +18,10 @@ public class PictureBigActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture_big);
         im_view = (ImageView) findViewById(R.id.im_view);
+
         Intent intent = getIntent();
         String ss = intent.getStringExtra("ss");
         Glide.with(this).load(ss).override(300, 200).
                 into(im_view);
-
     }
 }

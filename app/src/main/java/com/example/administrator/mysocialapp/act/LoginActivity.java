@@ -162,9 +162,14 @@ public class LoginActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.password_edt);
         checkBox = (CheckBox) findViewById(R.id.chat_login_password_checkbox);
         //初始化sp数据库
-        sp = this.getSharedPreferences("passwordsave", MODE_PRIVATE);
+       // sp = this.getSharedPreferences("passwordsave", MODE_PRIVATE);
+        username.setText(SPUtils.getLastLoginUserName(this));
+        password.setText(SPUtils.getLastLoginPassword(this));
+
+
         //光标位置
         username.setSelection(username.getText().toString().length());
+        password.setSelection(password.getText().toString().length());
     }
 
     private void logBefore() {
@@ -222,6 +227,8 @@ public class LoginActivity extends AppCompatActivity {
         EMClient.getInstance().login(name, passwords, new EMCallBack() {
             @Override
             public void onSuccess() {
+                SPUtils.setLastLoginUserName(LoginActivity.this,name);
+                SPUtils.setLastLoginPassword(LoginActivity.this,passwords);
                 // 进入主页面
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 finish();

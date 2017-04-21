@@ -93,11 +93,11 @@
             android:text="@string/photo" />
 
         <Button
-            android:id="@+id/btn_yuYin"
+            android:id="@+id/btn_luX"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="@string/yuYin" />
+            android:text="@string/luX" />
     </LinearLayout>
 
     <LinearLayout
